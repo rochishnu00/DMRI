@@ -40,21 +40,21 @@ if geo_choice == 2:
     # mesh_name = "multi_layered_cylinder"
     # mesh_name = "multi_layered_sphere"
     # mesh_name = "multi_layered_torus"
-
-    is_geo_file_exist = os.path.isfile(mesh_name+'.geo')
+    
+    is_geo_file_exist = os.path.isfile(mesh_name+'.geo')  
     if is_geo_file_exist==False:
         os.system('wget --quiet https://raw.githubusercontent.com/van-dang/DMRI-FEM-Cloud/mesh/'+mesh_name+'.geo')
 
-    # Modify .geo file from 4 layers to 3 layers
+    # Modify .geo file from 4 layers to 3 layers      
     os.system("sed -i 's/5, 7.5, 10, 13/5, 7.5, 10/g' "+mesh_name+".geo")
-
+      
     # Create mesh from geo file by gmsh
     os.system('gmsh -3 '+mesh_name+'.geo -o '+mesh_name+'.msh')
-
+    
     # Convert .msh to .xml using dolfin-convert
     os.system('dolfin-convert '+mesh_name+'.msh '+mesh_name+'.xml')
-
-    mymesh = Mesh(mesh_name+".xml");
+       
+    mymesh = Mesh(mesh_name+".xml");  
 
     GetPartitionMarkers(mesh_name+".msh", "pmk_"+mesh_name+".xml")
 
@@ -62,23 +62,23 @@ if geo_choice == 2:
 
     File("pmk_"+mesh_name+".xml")>>partition_marker
 
-    phase, partion_list = CreatePhaseFunc(mymesh, [], [], partition_marker)
+    phase, partion_list = CreatePhaseFunc(mymesh, [], [], partition_marker)    
 
 ################################################################################
 ############## Download the existing mesh and submesh ##########################
 if geo_choice == 3:
-    is_file_exist = os.path.isfile("multi_layer_torus.xml")
+    is_file_exist = os.path.isfile("multi_layer_torus.xml")  
     if is_file_exist==False:
         os.system('wget --quiet https://raw.githubusercontent.com/van-dang/DMRI-FEM-Cloud/master/comri/meshes/multi_layer_torus.xml.zip')
         os.system('wget --quiet https://raw.githubusercontent.com/van-dang/DMRI-FEM-Cloud/master/comri/meshes/multi_layer_torus_compt1.xml.zip')
         os.system('unzip -q multi_layer_torus.xml.zip')
         os.system('unzip -q multi_layer_torus_compt1.xml.zip')
 
-    mymesh = Mesh("multi_layer_torus.xml");
+    mymesh = Mesh("multi_layer_torus.xml");  
     cmpt_mesh = Mesh('multi_layer_torus_compt1.xml')
     phase, partion_list, partition_marker = CreatePhaseFunc(mymesh, [], [cmpt_mesh], None)
 
-
+    
 if geo_choice == 4:
     print("Working with volume_box_N_18_7_3_5L_fine.xml")
     is_file_exist = os.path.isfile("volume_box_N_18_7_3_5L_fine.xml")
@@ -96,18 +96,18 @@ if geo_choice == 5:
     is_mesh_file_exist = os.path.isfile('mesh_226cylinders.xml.zip')
     if is_mesh_file_exist==False:
         os.system('wget --quiet https://github.com/van-dang/DMRI-FEM-Cloud/raw/mesh/mesh_226cylinders.xml.zip')
-        os.system('wget --quiet https://github.com/van-dang/DMRI-FEM-Cloud/raw/mesh/submesh_226cylinders.xml.zip')
+	os.system('wget --quiet https://github.com/van-dang/DMRI-FEM-Cloud/raw/mesh/submesh_226cylinders.xml.zip')
         os.system('rm -rf mesh_226cylinders.xml submesh_226cylinders.xml __MACOSX')
         os.system('unzip mesh_226cylinders.xml.zip')
         os.system('unzip submesh_226cylinders.xml.zip')
     mymesh = Mesh("mesh_226cylinders.xml");
     cmpt_mesh = Mesh('submesh_226cylinders.xml')
     phase, partion_list, partition_marker = CreatePhaseFunc(mymesh, [], [cmpt_mesh], None)
-
+    
 ################################################################################
 ############## Save, Plot phase functions and submeshes to verify ##############
 print("Save phase function")
-File("phase.pvd")<<phase
+File("phase.pvd")<<phase    
 
 print("Partition markers:", partion_list)
 
@@ -124,14 +124,14 @@ d00 = Function(V_DG); d01 = Function(V_DG); d02 = Function(V_DG)
 d10 = Function(V_DG); d11 = Function(V_DG); d12 = Function(V_DG)
 d20 = Function(V_DG); d21 = Function(V_DG); d22 = Function(V_DG)
 T2  = Function(V_DG); disc_ic = Function(V_DG);
-
+        
 for cell in cells(mymesh):
       cell_dof = dofmap_DG.cell_dofs(cell.index())
       cmk = partition_marker[cell.index()]
       T2.vector()[cell_dof]      = T2_array[cmk];
-      disc_ic.vector()[cell_dof] = IC_array[cmk];
-      d00.vector()[cell_dof]     = D0_array[cmk];
-      d11.vector()[cell_dof]     = D0_array[cmk];
+      disc_ic.vector()[cell_dof] = IC_array[cmk]; 
+      d00.vector()[cell_dof]     = D0_array[cmk]; 
+      d11.vector()[cell_dof]     = D0_array[cmk]; 
       d22.vector()[cell_dof]     = D0_array[cmk];
 
 ofile = 'files.h5';
