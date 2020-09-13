@@ -96,7 +96,7 @@ if geo_choice == 5:
     is_mesh_file_exist = os.path.isfile('mesh_226cylinders.xml.zip')
     if is_mesh_file_exist==False:
         os.system('wget --quiet https://github.com/van-dang/DMRI-FEM-Cloud/raw/mesh/mesh_226cylinders.xml.zip')
-	    os.system('wget --quiet https://github.com/van-dang/DMRI-FEM-Cloud/raw/mesh/submesh_226cylinders.xml.zip')
+	os.system('wget --quiet https://github.com/van-dang/DMRI-FEM-Cloud/raw/mesh/submesh_226cylinders.xml.zip')
         os.system('rm -rf mesh_226cylinders.xml submesh_226cylinders.xml __MACOSX')
         os.system('unzip mesh_226cylinders.xml.zip')
         os.system('unzip submesh_226cylinders.xml.zip')
