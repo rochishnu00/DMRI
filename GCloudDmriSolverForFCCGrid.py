@@ -158,6 +158,28 @@ CheckAndCorrectPeriodicity(mymesh, 1, 1e-6)
 V_DG = FunctionSpace(mymesh, 'DG', 0)
 dofmap_DG = V_DG.dofmap()
 
+if is_kcoeff_from_file == 1:
+        if rank==0:
+            print("Reading diffusion tensor from file: ", ffile)
+        d00 = Function(V_DG); d01 = Function(V_DG); d02 = Function(V_DG)
+        d10 = Function(V_DG); d11 = Function(V_DG); d12 = Function(V_DG)
+        d20 = Function(V_DG); d21 = Function(V_DG); d22 = Function(V_DG)
+        myf.read(d00, 'd00'); myf.read(d01, 'd01'); myf.read(d02, 'd02')
+        myf.read(d10, 'd10'); myf.read(d11, 'd11'); myf.read(d12, 'd12')
+        myf.read(d20, 'd20'); myf.read(d21, 'd21'); myf.read(d22, 'd22')
+
+if is_T2_from_file == 1:
+        if rank==0:
+            print("Reading T2 from file: ", ffile)
+        T2 = Function(V_DG);
+        myf.read(T2, 'T2');
+
+if IsDomainMultiple==1:
+        if rank==0:
+            print("Reading phase function from file: ", ffile)        
+        phase = Function(V_DG);
+        myf.read(phase, 'phase');
+
 mri_simu = MRI_simulation()
 mri_para = MRI_parameters()
 #bvalues = [500]
@@ -217,12 +239,7 @@ for bvalue in bvalues:
     mydomain.Apply()
     # Impose the diffusion coefficient
     # mydomain.D  = 3e-3;
-    DO_array=[554.7e-6, 1664.2e-6, 554.7e-6]
     #Variable diffusion tensor
-    V_DG=mydomain.V_DG; dofmap_DG=V_DG.dofmap();
-    d00= Function(V_DG); d01=Function(V_DG); d02=Function(V_DG);
-    d10= Function(V_DG); d11=Function(V_DG); d12=Function(V_DG);
-    d20= Function(V_DG); d21=Function(V_DG); d22=Function(V_DG);
     mydomain.ImposeDiffusionTensor(d00,d01,d02,d10,d11,d12,d20,d21,d22);
 
     #################################################################################
