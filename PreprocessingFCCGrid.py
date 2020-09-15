@@ -1,6 +1,21 @@
 import os, sys, shutil
 from dolfin import *
 
+def RefineNearBoundary(mesh, nrefine):
+    for j in range(nrefine):
+      print("Refining ...")
+      mesh.init(mesh.topology().dim()-1, mesh.topology().dim()) # Initialise facet to cell connectivity
+      markers = MeshFunction("bool", mesh, mesh.topology().dim())
+      for c in cells(mesh):
+        for f in facets(c):
+          if f.exterior():
+            markers[c] = True
+            break
+      mesh = refine(mesh, markers)   
+    print("Refined meshes: %d cells, %d vertices"%(mesh.num_cells(), mesh.num_vertices()))
+    return mesh
+
+
 comm = MPI.comm_world
 nprocs = comm.Get_size()
 if (nprocs>1):
@@ -19,51 +34,51 @@ from DmriFemLib import *
 
 
 """# Working on the mesh"""
-mesh_name= "fcc_grid_v3"
+mesh_file= 'fcc_grid_v3'
+file_dir= 'https://raw.githubusercontent.com/van-dang/DMRI-FEM-Cloud/mesh/'+mesh_file+'.msh.zip'
+os.system('wget --quiet https://raw.githubusercontent.com/rochishnu00/DMRI/'+mesh_file+'.msh.zip')
+zip_exists = os.path.isfile(mesh_file+".msh.zip")
+mesh_file_exists = os.path.isfile(mesh_file)
+if (zip_exists==False):
+    os.system("wget "+file_dir)
+if (mesh_file_exists==False):
+    os.system("unzip -q "+mesh_file+".msh.zip")
+os.system("dolfin-convert "+mesh_file+".msh "+mesh_file+".xml")
+print('Mesh file: ', mesh_file)
 
-os.system('wget --quiet https://raw.githubusercontent.com/rochishnu00/DMRI/'+mesh_name+'.geo')
+mesh = Mesh(mesh_file+".xml")
 
-def RefineNearBoundary(mesh, nrefine):
-    for j in range(nrefine):
-      print("Refining ...")
-      mesh.init(mesh.topology().dim()-1, mesh.topology().dim()) # Initialise facet to cell connectivity
-      markers = MeshFunction("bool", mesh, mesh.topology().dim())
-      for c in cells(mesh):
-        for f in facets(c):
-          if f.exterior():
-            markers[c] = True
-            break
-      mesh = refine(mesh, markers)   
-    print("Refined meshes: %d cells, %d vertices"%(mesh.num_cells(), mesh.num_vertices()))
-    return mesh
+V_DG = FunctionSpace(mesh, 'DG', 0)
 
+D0_array = [554.7e-6, 1664.2e-6, 554.7e-6]
+IC_array = [1]
+T2_array = [1e6]
 
-mesh_name = "fcc_grid_v3"
-    
-# Create mesh from geo file by gmsh
-os.system('gmsh -3 '+mesh_name+'.geo -o '+mesh_name+'.msh')
+# Variable tensor
+dofmap_DG = V_DG.dofmap()
+d00 = Function(V_DG); d01 = Function(V_DG); d02 = Function(V_DG)
+d10 = Function(V_DG); d11 = Function(V_DG); d12 = Function(V_DG)
+d20 = Function(V_DG); d21 = Function(V_DG); d22 = Function(V_DG)
+T2 = Function(V_DG); disc_ic = Function(V_DG);
+        
 
-# Convert .msh to .xml using dolfin-convert
-os.system('dolfin-convert '+mesh_name+'.msh '+mesh_name+'.xml')
+print('Setting parameters to %d cells'%(mesh.num_cells()))
 
-#os.system('wget --quiet https://raw.githubusercontent.com/rochishnu00/DMRI/'+mesh_name+'.xml')
-
-mymesh = Mesh(mesh_name+".xml");  
-
-GetPartitionMarkers(mesh_name+".msh", "pmk_"+mesh_name+".xml")
-
-partition_marker = MeshFunction("size_t", mymesh, mymesh.topology().dim())
-
-File("pmk_"+mesh_name+".xml")>>partition_marker
-    
-phase, partion_list = CreatePhaseFunc(mymesh, [], [], partition_marker)
-    
-File("Phase.pvd")<<phase
-
-print("Save phase function")
-File("phase.pvd")<<phase
-
-print("Partition markers:", partion_list)
+T2.vector()[:]      = T2_array[0];
+disc_ic.vector()[:] = IC_array[0];
+d00.vector()[:]     = D0_array[0];
+d11.vector()[:]     = D0_array[0];
+d22.vector()[:]     = D0_array[0];
+                             
+'''
+for cell in cells(mesh):
+      cell_dof = dofmap_DG.cell_dofs(cell.index())
+      T2.vector()[cell_dof]      = T2_array[0];
+      disc_ic.vector()[cell_dof] = IC_array[0];
+      d00.vector()[cell_dof]     = D0_array[0];
+      d11.vector()[cell_dof]     = D0_array[0];
+      d22.vector()[cell_dof]     = D0_array[0];
+'''
 
 ofile = 'files.h5';
 
@@ -74,8 +89,15 @@ for i in range(0, len(sys.argv)):
 
 filename, file_extension = os.path.splitext(ofile)
 
+
 ofile = filename+'.h5'
 
-f = HDF5File(mymesh.mpi_comm(), ofile, 'w')
-f.write(mymesh, 'mesh');  f.write(T2, 'T2'); f.write(disc_ic, 'ic'); f.write(phase, 'phase');
-print("Write to ", ofile)
+print("Write to ",ofile)
+f = HDF5File(mesh.mpi_comm(), ofile, 'w')
+f.write(mesh, 'mesh')
+f.write(T2, 'T2');  f.write(disc_ic, 'ic'); 
+f.write(d00, 'd00'); f.write(d01, 'd01'); f.write(d02, 'd02')
+f.write(d10, 'd10'); f.write(d11, 'd11'); f.write(d12, 'd12')
+f.write(d20, 'd20'); f.write(d21, 'd21'); f.write(d22, 'd22')
+
+print("Done")
