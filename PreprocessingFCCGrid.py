@@ -89,7 +89,7 @@ d22.vector()[:]     = D0_array[0];
 kappa_tensor = [[0,0,0],[0,0,0],[0,0,0]] 
 kappa_tensor[0][1] = kappa_tensor[1][0] = 0.1e-3
 kappa_tensor[1][2] = kappa_tensor[2][1] = 0.1e-3
-CR = FunctionSpace(mydomain.mymesh, "CR",1)
+CR = FunctionSpace(mymesh, "CR",1)
 dofmap= CR.dofmap()
 kappa = Function(CR)
 D= mydomain.mymesh.topology().dim()
