@@ -47,12 +47,11 @@ mesh_name = "fcc_grid_v3"
 !dolfin-convert $mesh_name''.msh $mesh_name''.xml
     
 # Create mesh from geo file by gmsh
-    os.system('gmsh -3 '+mesh_name+'.geo -o '+mesh_name+'.msh')
+os.system('gmsh -3 '+mesh_name+'.geo -o '+mesh_name+'.msh')
 
 # Convert .msh to .xml using dolfin-convert
 os.system('dolfin-convert '+mesh_name+'.msh '+mesh_name+'.xml')
 
-os.system('pip install -U meshio')
 
 
 mymesh = Mesh(mesh_name+".xml");  
