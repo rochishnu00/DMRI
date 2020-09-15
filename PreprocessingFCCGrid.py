@@ -85,6 +85,31 @@ disc_ic.vector()[:] = IC_array[0];
 d00.vector()[:]     = D0_array[0];
 d11.vector()[:]     = D0_array[0];
 d22.vector()[:]     = D0_array[0];
+
+kappa_tensor = [[0,0,0],[0,0,0],[0,0,0]] 
+kappa_tensor[0][1] = kappa_tensor[1][0] = 0.1e-3
+kappa_tensor[1][2] = kappa_tensor[2][1] = 0.1e-3
+CR = FunctionSpace(mydomain.mymesh, "CR",1)
+dofmap= CR.dofmap()
+kappa = Function(CR)
+D= mydomain.mymesh.topology().dim()
+mydomain.mymesh.init(D-1,D) # Build connectivity between facets and cells
+facet_f = MeshFunction("double", mydomain.mymesh, D - 1)
+for facet in facets(mydomain.mymesh): 
+    adjacent_cells = facet.entities(D) 
+    if len(adjacent_cells)>1:
+        domain_marker1 = partition_marker[adjacent_cells[0]]                            
+        domain_marker2 = partition_marker[adjacent_cells[1]] 
+        if domain_marker1!=domain_marker2:
+            facet_f[facet] = kappa_tensor[domain_marker1][domain_marker2]  
+    file = File('faces.pvd')
+    file << facet_f     
+    for cell in cells(mydomain.mymesh):                                                         
+        dofs = dofmap.cell_dofs(cell.index())                                          
+        for i, facet in enumerate(facets(cell)):                                       
+            kappa.vector()[dofs[i]] = facet_f[facet] 
+    file = File('kappa.pvd')
+    file << kappa
                              
 '''
 for cell in cells(mesh):
@@ -115,5 +140,5 @@ f.write(T2, 'T2');  f.write(disc_ic, 'ic');
 f.write(d00, 'd00'); f.write(d01, 'd01'); f.write(d02, 'd02')
 f.write(d10, 'd10'); f.write(d11, 'd11'); f.write(d12, 'd12')
 f.write(d20, 'd20'); f.write(d21, 'd21'); f.write(d22, 'd22')
-
+f.write(kappa, 'kappa')
 print("Done")
