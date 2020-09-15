@@ -41,12 +41,12 @@ def RefineNearBoundary(mesh, nrefine):
 mesh_name = "fcc_grid_v3"
     
 # Create mesh from geo file by gmsh
-# os.system('gmsh -3 '+mesh_name+'.geo -o '+mesh_name+'.msh')
+os.system('gmsh -3 '+mesh_name+'.geo -o '+mesh_name+'.msh')
 
 # Convert .msh to .xml using dolfin-convert
-# os.system('dolfin-convert '+mesh_name+'.msh '+mesh_name+'.xml')
+os.system('dolfin-convert '+mesh_name+'.msh '+mesh_name+'.xml')
 
-os.system('wget --quiet https://raw.githubusercontent.com/rochishnu00/DMRI/'+mesh_name+'.xml')
+#os.system('wget --quiet https://raw.githubusercontent.com/rochishnu00/DMRI/'+mesh_name+'.xml')
 
 mymesh = Mesh(mesh_name+".xml");  
 
