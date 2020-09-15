@@ -152,9 +152,6 @@ mymesh = Mesh()
 myf = HDF5File(mymesh.mpi_comm(),ffile, 'r')
 myf.read(mymesh, 'mesh', False)
 
-CheckAndCorrectPeriodicity(mymesh, 0, 1e-6)
-CheckAndCorrectPeriodicity(mymesh, 1, 1e-6)
-
 V_DG = FunctionSpace(mymesh, 'DG', 0)
 dofmap_DG = V_DG.dofmap()
 
@@ -179,7 +176,9 @@ if IsDomainMultiple==1:
             print("Reading phase function from file: ", ffile)        
         phase = Function(V_DG);
         myf.read(phase, 'phase');
-
+mesh_name="fcc_grid_v3"
+GetPartitionMarkers(mesh_name+".msh", "pmk_"+mesh_name+".xml")
+partition_marker = MeshFunction("size_t", mymesh, mymesh.topology().dim())
 mri_simu = MRI_simulation()
 mri_para = MRI_parameters()
 #bvalues = [500]
