@@ -44,6 +44,22 @@ if (zip_exists==False):
 if (mesh_file_exists==False):
     os.system("unzip -q "+mesh_file+".msh.zip")
 os.system("dolfin-convert "+mesh_file+".msh "+mesh_file+".xml")
+
+mesh_name = "fcc_grid_v3"
+mymesh = Mesh(mesh_name+".xml");
+GetPartitionMarkers(mesh_name+".msh", "pmk_"+mesh_name+".xml")
+partition_marker = MeshFunction("size_t", mymesh, mymesh.topology().dim())
+File("pmk_"+mesh_name+".xml")>>partition_marker
+phase, partion_list = CreatePhaseFunc(mymesh, [], [], partition_marker)
+
+CheckAndCorrectPeriodicity(mymesh, 0, 1e-6)
+CheckAndCorrectPeriodicity(mymesh, 1, 1e-6)
+
+print("Save phase function")
+File("phase.pvd")<<phase
+
+print("Partition markers:", partion_list)
+
 print('Mesh file: ', mesh_file)
 
 mesh = Mesh(mesh_file+".xml")
