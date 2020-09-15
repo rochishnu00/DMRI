@@ -20,7 +20,7 @@ from DmriFemLib import *
 
 """# Working on the mesh"""
 
-geo_choice = 2
+geo_choice = 0
 
 if geo_choice == 0:
       mesh_file='2E_ExtraCellular_group_10um_vol'
