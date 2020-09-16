@@ -83,8 +83,8 @@ print('Setting parameters to %d cells'%(mesh.num_cells()))
 T2.vector()[:]      = T2_array[0];
 disc_ic.vector()[:] = IC_array[0];
 d00.vector()[:]     = D0_array[0];
-d11.vector()[:]     = D0_array[0];
-d22.vector()[:]     = D0_array[0];
+d11.vector()[:]     = D0_array[1];
+d22.vector()[:]     = D0_array[2];
 
 kappa_tensor = [[0,0,0],[0,0,0],[0,0,0]] 
 kappa_tensor[0][1] = kappa_tensor[1][0] = 0.1e-3
