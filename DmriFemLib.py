@@ -879,8 +879,6 @@ class MRI_simulation():
     def solve(self, mydomain, mri_para, linsolver, ic=None):
 
           self.Dirac_Delta, self.u_0 = self.InitialCondition(mydomain, ic)
-          if rank==0:
-              print('qvalue: %e'%self.qvalue)
 
           stepcounter = 0;
 
@@ -891,6 +889,9 @@ class MRI_simulation():
 
           comm = MPI.comm_world
           rank = comm.Get_rank()
+
+          if rank==0:
+              print('qvalue: %e'%self.qvalue)
 
           ft_f, ift_f, ft_p_f, ift_p_f = Function(mydomain.V), Function(mydomain.V), Function(mydomain.V), Function(mydomain.V);
           F = ThetaMethodF(ft_f, ift_f, mri_para, self, mydomain)
