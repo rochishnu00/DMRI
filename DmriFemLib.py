@@ -879,6 +879,8 @@ class MRI_simulation():
     def solve(self, mydomain, mri_para, linsolver, ic=None):
 
           self.Dirac_Delta, self.u_0 = self.InitialCondition(mydomain, ic)
+          if rank==0:
+              print('qvalue: %e'%self.qvalue)
 
           stepcounter = 0;
 
